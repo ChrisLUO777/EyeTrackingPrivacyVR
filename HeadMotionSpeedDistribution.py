@@ -35,12 +35,12 @@ for head_coordinate_file in head_coordinate_files:
                 segment_length_under_threshold += 1
             elif cur_speed > head_movement_threshold:   # note the program can only pick EITHER "if" or "elif" branch,
                 if segment_length_under_threshold > 0:
-                    segment_lengths_under_threshold.append(segment_length_under_threshold)
+                    segment_lengths_under_threshold.append(segment_length_under_threshold * 0.3)
                 segment_length_under_threshold = 0
             # so we have to deal with the "end of the line" case in another "if" branch.
             if step_index == user_idx * 100 + 98:
                 if segment_length_under_threshold > 0:
-                    segment_lengths_under_threshold.append(segment_length_under_threshold)
+                    segment_lengths_under_threshold.append(segment_length_under_threshold * 0.3)
                 segment_length_under_threshold = 0
 
 
@@ -54,9 +54,9 @@ for head_coordinate_file in head_coordinate_files:
 
 # calculate the total length of segments under the threshold
 print("ratio of time when head movement is less than 10 degrees: ",
-      sum(segment_lengths_under_threshold) / (99 * 57 * 19))
+      sum(segment_lengths_under_threshold) / (99 * 57 * 19 * 0.3))
 
-# plot the distribution (PDF) of the head movement speed
+# plot the distribution of the head movement speed
 num_bins = 100
 counts, bin_edges = np.histogram(head_movement_angle, bins=num_bins)    # Use the histogram function to bin the data
 plt.subplot(2, 1, 1)
@@ -68,5 +68,21 @@ cdf = np.cumsum(counts)
 plt.subplot(2, 1, 2)
 plt.plot(bin_edges[1:], cdf / len(head_movement_angle))    # plot the cdf
 plt.xlabel('Head Movement Angle (deg)')
+plt.ylabel('CDF')
+plt.show()
+
+# plot the distribution of the lengths of segments below the speed threshold
+num_bins = 100
+counts, bin_edges = np.histogram(segment_lengths_under_threshold, bins=num_bins)
+# Use the histogram function to bin the data
+plt.subplot(2, 1, 1)
+plt.plot(bin_edges[1:], counts / len(segment_lengths_under_threshold))    # And finally plot the pdf.
+# Note bin_edges is 1 greater than num of bins.
+plt.title('Segment Lengths Distribution')
+plt.ylabel('Probability')
+cdf = np.cumsum(counts)
+plt.subplot(2, 1, 2)
+plt.plot(bin_edges[1:], cdf / len(segment_lengths_under_threshold))    # plot the cdf
+plt.xlabel('Segment Length (sec)')
 plt.ylabel('CDF')
 plt.show()

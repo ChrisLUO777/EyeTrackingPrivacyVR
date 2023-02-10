@@ -16,7 +16,10 @@ def get_saccade_index(eye_movement_speed, peak_saccade_velocity_threshold):
     above_threshold = False
     for saccade_end in range(len(eye_movement_speed)):
         if eye_movement_speed[saccade_end] > peak_saccade_velocity_threshold:
-            above_threshold = True
+            # segments where the speed is above the threshold are saccades.
+            if not above_threshold:
+                saccade_start = saccade_end
+                above_threshold = True
         elif eye_movement_speed[saccade_end] <= peak_saccade_velocity_threshold:
             if above_threshold:
                 saccades.append([saccade_start, saccade_end])
@@ -34,7 +37,10 @@ def get_fixation_index(eye_movement_speed, peak_saccade_velocity_threshold):
     below_threshold = False
     for fixation_end in range(len(eye_movement_speed)):
         if eye_movement_speed[fixation_end] <= peak_saccade_velocity_threshold:
-            below_threshold = True
+            # segments where the speed is below the threshold are fixations.
+            if not below_threshold:
+                fixation_start = fixation_end
+                below_threshold = True
         elif eye_movement_speed[fixation_end] > peak_saccade_velocity_threshold:
             if below_threshold:
                 fixations.append([fixation_start, fixation_end])
@@ -43,6 +49,25 @@ def get_fixation_index(eye_movement_speed, peak_saccade_velocity_threshold):
         if fixation_end == len(eye_movement_speed) - 1 and below_threshold:
             fixations.append([fixation_start, fixation_end])
     return fixations
+
+
+def get_blink_index(eye_gaze_coordinates):
+    blinks = []
+    blink_start = 0
+    is_blinking = False
+    for blink_end in range(len(eye_gaze_coordinates)):
+        if math.isnan(eye_gaze_coordinates[blink_end][0]):
+            if not is_blinking:
+                blink_start = blink_end
+                is_blinking = True
+        else:
+            if is_blinking:
+                blinks.append([blink_start, blink_end])
+            blink_start = blink_end
+            is_blinking = False
+        if blink_end == len(eye_gaze_coordinates) - 1 and is_blinking:
+            blinks.append([blink_start, blink_end])
+    return blinks
 
 
 def get_optimal_peak_saccade_velocity_threshold(eye_movement_speed):
@@ -64,11 +89,24 @@ def get_optimal_peak_saccade_velocity_threshold(eye_movement_speed):
     return optimal_peak_saccade_velocity_threshold
 
 
-def get_smooth_eye_movement_speed(eye_coordinates):
+def get_real_number_eye_gaze_coordinates(eye_gaze_coordinates):
+    # replace all nan values with 0s
+    real_number_eye_gaze_coordinates = []
+    for step_index in range(len(eye_gaze_coordinates)):
+        tmp_eye_gaze_coordinate = [0, 0]
+        if not math.isnan(eye_gaze_coordinates[step_index][0]):
+            tmp_eye_gaze_coordinate[0] = eye_gaze_coordinates[step_index][0]
+        if not math.isnan(eye_gaze_coordinates[step_index][1]):
+            tmp_eye_gaze_coordinate[1] = eye_gaze_coordinates[step_index][1]
+        real_number_eye_gaze_coordinates.append(tmp_eye_gaze_coordinate)
+    return real_number_eye_gaze_coordinates
+
+
+def get_smooth_eye_movement_speed(eye_gaze_coordinates):
     eye_speed = []
-    for step_index in range(len(eye_coordinates) - 1):
+    for step_index in range(len(eye_gaze_coordinates) - 1):
         # the sampling rate is 250 Hz
-        cur_speed = get_step_distance(eye_coordinates[step_index], eye_coordinates[step_index + 1]) * 250
+        cur_speed = get_step_distance(eye_gaze_coordinates[step_index], eye_gaze_coordinates[step_index + 1]) * 250
         if math.isnan(cur_speed):  # if the user is blinking, the derived speed will be "nan".
             eye_speed.append(0)  # replace "nan" with "0"
         else:
