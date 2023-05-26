@@ -2,3 +2,26 @@
 /scanpath/
 .idea
 __pycache__
+/jfg_classifier.h5
+/jfg_classifier_tex_vid.h5
+/jfg_comparator_c.h5
+/jfg_comparator_s1_text.h5
+/jfg_comparator_s1_video.h5
+/jfg_model_c_s1_text.h5
+/jfg_model_c_s1_video.h5
+/jfg_model_c_tex_vid.h5
+/jfg_model_s1_text.h5
+/jfg_model_s1_video.h5
+/jfg_model_tex_vid.h5
+/jfg_vectors_comparison_0_c_s1_text.hdf5
+/jfg_vectors_comparison_0_c_s1_video.hdf5
+/jfg_vectors_comparison_0_s1_text.hdf5
+/jfg_vectors_comparison_0_s1_video.hdf5
+/train_jfg_50users_s1_text_with_labels.hdf5
+/train_jfg_50users_s1_vid_8s.hdf5
+/train_jfg_50users_s1_video_s1_r2r3_text.hdf5
+/train_jfg_50users_s1_video_with_labels.hdf5
+/text visual.PNG
+/train_50users_s1_r2r3_text.hdf5
+/train_50users_s1_vid_38s.hdf5
+/InspectHdf5File.py

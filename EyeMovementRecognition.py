@@ -73,7 +73,10 @@ def get_blink_index(eye_gaze_coordinates):
 def get_optimal_peak_saccade_velocity_threshold(eye_movement_speed):
     previous_peak_saccade_velocity_threshold = 0
     optimal_peak_saccade_velocity_threshold = 100
-    while math.fabs(optimal_peak_saccade_velocity_threshold - previous_peak_saccade_velocity_threshold) > 1:
+    counter = 0
+    while math.fabs(optimal_peak_saccade_velocity_threshold - previous_peak_saccade_velocity_threshold) > 1 \
+            and counter < 1000:
+        # put a limit to the loop otherwise it may never end.
         previous_peak_saccade_velocity_threshold = optimal_peak_saccade_velocity_threshold
         fixation_periods = get_fixation_index(eye_movement_speed, previous_peak_saccade_velocity_threshold)
         fixation_velocities = []
@@ -81,11 +84,14 @@ def get_optimal_peak_saccade_velocity_threshold(eye_movement_speed):
             fixation_velocities.extend(
                 eye_movement_speed[fixation_periods[fixation_index][0]:fixation_periods[fixation_index][1]])
         fixation_velocities.sort()
+        if not fixation_velocities:
+            fixation_velocities = [0]
         median = np.median(fixation_velocities)
         Q1 = np.percentile(fixation_velocities, 25, interpolation='midpoint')   # First quartile (Q1)
         Q3 = np.percentile(fixation_velocities, 75, interpolation='midpoint')   # Third quartile (Q3)
         IQR = Q3 - Q1   # Interquaritle range (IQR)
         optimal_peak_saccade_velocity_threshold = median + IQR
+        counter += 1
     return optimal_peak_saccade_velocity_threshold
 
 

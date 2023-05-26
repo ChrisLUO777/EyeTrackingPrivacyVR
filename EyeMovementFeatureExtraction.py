@@ -1,5 +1,6 @@
 # This is the main program to segment and extract features from the eye movement data.
 import glob
+from pathlib import Path
 import math
 import os
 import numpy as np
@@ -164,17 +165,14 @@ if __name__ == '__main__':
     user_id2VID_record_num = collections.defaultdict(int)
     user_id2TEX_record_num = collections.defaultdict(int)
     for eye_coordinate_file in eye_coordinate_files:
-        # processing time too long???
-        df = pd.read_csv(eye_coordinate_file)
-
-        record_length = 8 * 250
+        record_length = 8 * 250     # the eye movement record is divided into 8s segments.
         eye_coordinate_file_name = eye_coordinate_file.split('.')[0]
         print(eye_coordinate_file_name.split('_'))
         activity_name = eye_coordinate_file_name.split('_')[-1]
         if activity_name == "VID":
-            user_id = eye_coordinate_file_name.split('_')[1][1:]
-            print(user_id)
             df = pd.read_csv(eye_coordinate_file)
+            user_id = eye_coordinate_file_name.split('_')[1][1:]
+            print(user_id + ", VID, " + str(user_id2VID_record_num[user_id]))
             # derive left and right eye gaze trace data.
             left_eye_gaze_coordinates_data = [coordinate for coordinate in list(zip(df.get("lx"), df.get("ly")))]
             right_eye_gaze_coordinates_data = [coordinate for coordinate in list(zip(df.get("rx"), df.get("ry")))]
@@ -184,21 +182,19 @@ if __name__ == '__main__':
                 if record_end_index - record_start_index == record_length:
                     # extract 30 features from left and right eye gaze data respectively.
                     features = extract_features(left_eye_gaze_coordinates_data[record_start_index:record_end_index + 1],
-                                                right_eye_gaze_coordinates_data[record_start_index:record_end_index + 1])
+                                                right_eye_gaze_coordinates_data[record_start_index:record_end_index + 1]
+                                                )
                     record_start_index = record_end_index
-
-                    print(len(features))
-                    print(features)
 
                     features_np = np.array(features)
                     df_save = pd.DataFrame(features_np)
-                    df_save.to_csv("./8s/VID/" + user_id + '_' + str(user_id2VID_record_num[user_id]) + ".csv",
+                    df_save.to_csv("./8s_feature/VID/" + user_id + '_' + str(user_id2VID_record_num[user_id]) + ".csv",
                                    index=False, header=False)
                     user_id2VID_record_num[user_id] += 1
         elif activity_name == "TEX":
-            user_id = eye_coordinate_file_name.split('_')[1][1:]
-            print(user_id)
             df = pd.read_csv(eye_coordinate_file)
+            user_id = eye_coordinate_file_name.split('_')[1][1:]
+            print(user_id + ", TEX, " + str(user_id2TEX_record_num[user_id]))
             # derive left and right eye gaze trace data.
             left_eye_gaze_coordinates_data = [coordinate for coordinate in list(zip(df.get("lx"), df.get("ly")))]
             right_eye_gaze_coordinates_data = [coordinate for coordinate in list(zip(df.get("rx"), df.get("ry")))]
@@ -206,16 +202,15 @@ if __name__ == '__main__':
             record_start_index = 0
             for record_end_index in range(len(left_eye_gaze_coordinates_data)):
                 if record_end_index - record_start_index == record_length:
+
                     # extract 30 features from left and right eye gaze data respectively.
                     features = extract_features(left_eye_gaze_coordinates_data[record_start_index:record_end_index + 1],
-                                                right_eye_gaze_coordinates_data[record_start_index:record_end_index + 1])
+                                                right_eye_gaze_coordinates_data[record_start_index:record_end_index + 1]
+                                                )
                     record_start_index = record_end_index
-
-                    print(len(features))
-                    print(features)
 
                     features_np = np.array(features)
                     df_save = pd.DataFrame(features_np)
-                    df_save.to_csv("./8s/TEX/" + user_id + '_' + str(user_id2TEX_record_num[user_id]) + ".csv",
+                    df_save.to_csv("./8s_feature/TEX/" + user_id + '_' + str(user_id2TEX_record_num[user_id]) + ".csv",
                                    index=False, header=False)
                     user_id2TEX_record_num[user_id] += 1
